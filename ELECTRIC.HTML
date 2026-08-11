@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Проводомер - планировщик электропроводки</title>
+<style>
+:root{--bg:#0b0e13;--p:#12161f;--p2:#171d29;--l:#242c3d;--l2:#39415a;--t:#e8ecf3;--t2:#cbd5e1;--m:#8b94a7;--d:#5c677d;--a:#fbbf24;--g:#34d399;--r:#f87171;--sb:#0a0d12;--sr:#0d1119;--sg:#151b28;--sw:#3d465e;--wi:#7dd3fc;--do:#d4a373;--f:'Inter',system-ui,sans-serif;--fm:'JetBrains Mono',monospace}
+[data-theme=light]{--bg:#eef1f6;--p:#fff;--p2:#f2f4f9;--l:#dde3ee;--l2:#c4cddf;--t:#151d2b;--t2:#334155;--m:#5a6578;--d:#8a93a6;--sb:#f7f9fc;--sr:#fff;--sg:#e4e9f2;--sw:#7c8aa5;--wi:#0ea5e9;--do:#b07a4a}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--t);font-family:var(--f);font-size:15px;line-height:1.5;transition:background .2s,color .2s}
+body.lock{overflow:hidden}
+.app{max-width:1180px;margin:0 auto;padding:24px 16px 120px}
+header{margin-bottom:20px;display:flex;gap:12px;align-items:flex-start}
+.head-main{flex:1}
+.logo{display:flex;align-items:center;gap:12px;font-size:24px;font-weight:700}
+.bolt{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#fbbf24,#f59e0b);display:flex;align-items:center;justify-content:center;font-size:22px}
+.tagline{color:var(--m);margin-top:4px;font-size:14px}
+.tbtn{width:48px;height:48px;border-radius:14px;border:1px solid var(--l2);background:var(--p);color:var(--t);font-size:20px;cursor:pointer;flex:none}
+.card{background:var(--p);border:1px solid var(--l);border-radius:16px;padding:18px;margin-bottom:16px}
+.card h2{font-size:16px;display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.step{width:24px;height:24px;border-radius:8px;background:var(--p2);border:1px solid var(--l2);color:var(--a);font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center}
+.subtle{color:var(--m);font-size:13px}
+label.f{display:block}label.f span{display:block;font-size:12px;color:var(--m);margin-bottom:5px}
+input[type=text],input[type=number]{width:100%;background:var(--sb);border:1px solid var(--l2);border-radius:10px;color:var(--t);padding:9px 12px;font-family:var(--f);font-size:14px;outline:none}
+input:focus{border-color:var(--a)}
+.rf{display:grid;grid-template-columns:1.4fr .8fr .8fr .8fr auto;gap:10px;align-items:end}
+.btn{border:none;border-radius:10px;padding:11px 16px;font-family:var(--f);font-size:14px;font-weight:600;cursor:pointer;min-height:44px}
+.bp{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#1a1203}
+.bg2{background:var(--p2);color:var(--t);border:1px solid var(--l2)}
+.lbtn{background:none;border:none;color:var(--m);font-size:12.5px;cursor:pointer;text-decoration:underline;display:none;margin-top:8px}
+.rlist{list-style:none;margin-top:12px;display:flex;flex-direction:column;gap:8px;max-height:240px;overflow-y:auto}
+.room{display:flex;align-items:center;gap:10px;background:var(--p2);border:1px solid var(--l);border-radius:12px;padding:10px 12px;cursor:pointer}
+.room.active{border-color:var(--a);background:rgba(251,191,36,.08)}
+.rmain{flex:1;min-width:0}
+.rname{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rdims{font-size:12px;color:var(--m);font-family:var(--fm)}
+.rtot{font-family:var(--fm);font-size:12.5px;color:var(--a);white-space:nowrap}
+.ibtn{background:none;border:none;border-radius:8px;color:var(--d);width:32px;height:32px;cursor:pointer;font-size:13px;flex:none}
+.ibtn:hover{color:var(--t);background:var(--l)}
+.ibtn.del:hover{color:var(--r)}
+.empty{color:var(--d);font-size:13px;padding:12px 4px;text-align:center}
+.launch{display:flex;flex-wrap:wrap;gap:16px;align-items:center;background:linear-gradient(135deg,rgba(251,191,36,.12),rgba(34,211,238,.08));border:1px solid rgba(251,191,36,.35)}
+.lico{font-size:38px}
+.ltxt{flex:1;min-width:200px}.ltxt b{font-size:17px}.ltxt p{color:var(--m);font-size:13px;margin-top:3px}
+.bbig{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#1a1203;font-size:16px;padding:14px 26px;border-radius:14px}
+.chips{display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:10px;margin-bottom:14px}
+.chip{background:var(--p2);border:1px solid var(--l);border-radius:12px;padding:12px 14px}
+.chip-l{display:block;font-size:11px;color:var(--m);text-transform:uppercase;margin-bottom:4px}
+.chip-v{font-family:var(--fm);font-size:18px;font-weight:700}
+.amber{color:var(--a)}.green{color:var(--g)}
+.tw{overflow-x:auto;border:1px solid var(--l);border-radius:12px;margin-top:12px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:540px}
+th{font-size:11px;text-transform:uppercase;color:var(--m);text-align:left;padding:9px 12px;background:var(--sb);border-bottom:1px solid var(--l)}
+td{padding:9px 12px;border-bottom:1px solid var(--l)}
+tfoot td{background:var(--sb);font-weight:700}
+.crow{display:flex;justify-content:flex-end;margin-top:14px;gap:10px;flex-wrap:wrap}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+details.card{padding:0}details.card summary{cursor:pointer;padding:16px 18px;font-weight:600;font-size:15px}
+details.card .body{padding:0 18px 18px}
+.sg{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:10px}
+.sg label{font-size:12px;color:var(--m);display:flex;flex-direction:column;gap:5px}
+.sg input{padding:8px 10px;font-family:var(--fm)}
+.hl{list-style:none;display:flex;flex-direction:column;gap:8px;font-size:13.5px;color:var(--m)}
+.hl b{color:var(--t)}.hl li{padding-left:20px;position:relative}.hl li::before{content:'▸';position:absolute;left:2px;color:var(--a)}
+.fab{position:fixed;right:18px;bottom:18px;z-index:70;display:flex;align-items:center;gap:10px;padding:0 22px;height:60px;border-radius:20px;border:none;background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#1a1203;font-size:17px;font-weight:700;cursor:pointer;box-shadow:0 12px 34px rgba(245,158,11,.45)}
+.board{position:fixed;inset:0;z-index:80;background:var(--bg);display:none;flex-direction:column}
+.board.open{display:flex;animation:bi .2s ease}
+@keyframes bi{from{opacity:0;transform:translateY(2%)}to{opacity:1;transform:none}}
+.btop{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid var(--l);background:var(--p)}
+.bb{width:44px;height:44px;border-radius:12px;border:1px solid var(--l2);background:var(--p2);color:var(--t);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex:none}
+.btitle{font-weight:700;font-size:16px;flex:1;min-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.segs{display:inline-flex;background:var(--sb);border:1px solid var(--l2);border-radius:10px;overflow:hidden;flex:none}
+.seg{background:none;border:none;color:var(--m);padding:9px 12px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:var(--f)}
+.seg.active{background:rgba(251,191,36,.15);color:var(--a)}
+.btools{display:flex;gap:8px;overflow-x:auto;padding:10px 14px;border-bottom:1px solid var(--l);background:var(--p)}
+.tool{display:inline-flex;align-items:center;gap:8px;background:var(--p2);border:1px solid var(--l2);color:var(--t);border-radius:12px;padding:9px 13px;font-size:13.5px;font-weight:600;cursor:pointer;min-height:44px;white-space:nowrap;flex:none;font-family:var(--f)}
+.tool.active{border-color:var(--a);background:rgba(251,191,36,.12)}
+.tool.danger.active{border-color:var(--r);background:rgba(248,113,113,.12)}
+.td{width:24px;height:24px;border-radius:50%;background:var(--c);color:#0b0e13;font-weight:700;font-size:12.5px;display:inline-flex;align-items:center;justify-content:center;flex:none}
+.td.sq{border-radius:6px}
+.parea{flex:1;min-height:220px;position:relative;padding:12px}
+#plan{width:100%;height:100%;display:block;touch-action:none;user-select:none;-webkit-user-select:none;cursor:crosshair;background:var(--sb);border:1px solid var(--l);border-radius:14px}
+.zbar{position:absolute;top:22px;right:22px;display:flex;flex-direction:column;gap:6px;z-index:6}
+.zbar button{width:44px;height:44px;border-radius:12px;background:var(--p);border:1px solid var(--l2);color:var(--t);font-size:19px;cursor:pointer}
+.bbot{padding:10px 14px calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--l);background:var(--p)}
+.tip{font-size:13px;color:var(--a);background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.22);border-radius:10px;padding:8px 12px}
+.selbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--p2);border:1px solid var(--l2);border-radius:12px;padding:10px 14px;margin-top:10px;font-size:13.5px}
+.selbar .grow{flex:1;min-width:150px}
+.selbar.hidden{display:none}
+.mbtn{background:var(--p2);border:1px solid var(--l2);color:var(--t);border-radius:8px;padding:6px 11px;font-size:12.5px;font-weight:600;cursor:pointer;min-height:36px}
+.bdo{background:transparent;border:1px solid rgba(248,113,113,.45);color:var(--r);border-radius:8px;padding:6px 12px;font-weight:600;cursor:pointer;min-height:36px}
+.sfields{display:flex;gap:8px;flex-wrap:wrap}
+.sfields label{font-size:11px;color:var(--m);display:flex;flex-direction:column;gap:3px}
+.sfields input{width:84px;padding:6px 8px;font-family:var(--fm);font-size:13px}
+.legend{display:flex;flex-wrap:wrap;gap:8px 14px;padding:0 14px 10px;font-size:11.5px;color:var(--m)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.ld{width:14px;height:4px;border-radius:2px;display:inline-block}
+footer{margin-top:20px;color:var(--d);font-size:12.5px;text-align:center}
+.clen{font-family:var(--fm);font-weight:700;text-align:right;color:var(--a)}
+.cmon{font-family:var(--fm);text-align:right}
+@media(max-width:860px){.rf{grid-template-columns:1fr 1fr}.rf .fn{grid-column:1/-1}.rf .btn{grid-column:1/-1}.g2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+ <div class="head-main">
+  <div class="logo"><span class="bolt">⚡</span> Проводомер</div>
+  <p class="tagline">Доска для чертежа проводки: комнаты, двери и окна, кабель, смета</p>
+ </div>
+ <button class="tbtn" id="themeBtn" type="button">🌙</button>
+</header>
+
+<div class="card">
+ <h2><span class="step">1</span> Комнаты <span class="subtle" id="roomsCount"></span></h2>
+ <form id="roomForm" class="rf" autocomplete="off">
+  <label class="f fn"><span>Название (или «3*4*3»)</span><input type="text" id="rName" placeholder="Гостиная"></label>
+  <label class="f"><span>Ширина, м</span><input type="text" id="rW" placeholder="3"></label>
+  <label class="f"><span>Длина, м</span><input type="text" id="rL" placeholder="4"></label>
+  <label class="f"><span>Высота, м</span><input type="text" id="rH" placeholder="3"></label>
+  <button class="btn bp" type="submit">Добавить</button>
+ </form>
+ <button class="lbtn" id="cancelEdit" type="button">Отменить редактирование</button>
+ <ul class="rlist" id="roomList"></ul>
+</div>
+
+<div class="card launch">
+ <div class="lico">📐</div>
+ <div class="ltxt"><b>Доска для чертежа</b>
+  <p>Весь экран: розетки, свет, варочная, кондиционер, коробки, щиток, двери и окна с размерами, свои трассы. Палец — двигать, щипок — масштаб.</p>
+ </div>
+ <button class="btn bbig" type="button" onclick="openBoard()">🎨 Открыть доску</button>
+</div>
+
+<div class="card">
+ <h2><span class="step">2</span> Расчёт по всей квартире</h2>
+ <div class="chips">
+  <div class="chip"><span class="chip-l">Кабель всего</span><span class="chip-v amber" id="chT">—</span></div>
+  <div class="chip"><span class="chip-l" style="color:#a78bfa">3×1,5 свет</span><span class="chip-v" id="ch15">—</span></div>
+  <div class="chip"><span class="chip-l" style="color:#22d3ee">3×2,5 розетки</span><span class="chip-v" id="ch25">—</span></div>
+  <div class="chip"><span class="chip-l" style="color:#fb923c">3×6 варочная</span><span class="chip-v" id="ch6">—</span></div>
+  <div class="chip"><span class="chip-l" style="color:#f87171">Ввод</span><span class="chip-v" id="chF">—</span></div>
+  <div class="chip"><span class="chip-l">Смета</span><span class="chip-v green" id="chM">—</span></div>
+ </div>
+ <div class="tw"><table><thead><tr><th>Кабель</th><th>Трасса</th><th>Сечение</th><th>Длина, м</th></tr></thead><tbody id="tb"></tbody><tfoot id="tf"></tfoot></table></div>
+ <div class="tw"><table><thead><tr><th>Комната</th><th>Коробки</th><th>Подрозетники</th><th>Автоматы</th><th>УЗО</th><th>Двери</th><th>Окна</th></tr></thead><tbody id="trm"></tbody></table></div>
+ <details class="inner" open><summary>🛡 Щит и материалы (с ценами)</summary>
+  <div class="tw" style="border:none;border-radius:0"><table><thead><tr><th>Материал</th><th>Кол-во</th><th>Цена</th><th>Сумма</th></tr></thead><tbody id="tm"></tbody><tfoot id="tmf"></tfoot></table></div>
+ </details>
+ <div class="crow">
+  <button class="btn bg2" id="expBtn" type="button">💾 Экспорт проекта</button>
+  <button class="btn bg2" id="impBtn" type="button">📂 Импорт</button>
+  <input type="file" id="impFile" accept="application/json,.json" style="display:none">
+  <button class="btn bg2" id="copyBtn" type="button">📋 Скопировать смету</button>
+ </div>
+</div>
+
+<div class="g2">
+ <details class="card" open><summary>⚙️ Настройки расчёта</summary><div class="body"><div class="sg">
+  <label>Запас с конца, см<input type="number" id="sReserve" min="0"></label>
+  <label>Коробка от потолка, см<input type="number" id="sBoxOff" min="0"></label>
+  <label>Розетка от пола, см<input type="number" id="sOutlet" min="0"></label>
+  <label>Выключатель от пола, см<input type="number" id="sSwitch" min="0"></label>
+  <label>Варочная от пола, см<input type="number" id="sCookH" min="0"></label>
+  <label>Кондиц. от потолка, см<input type="number" id="sAcOff" min="0"></label>
+  <label>Щиток от пола, см<input type="number" id="sPanel" min="0"></label>
+  <label>Закупочный запас, %<input type="number" id="sPct" min="0"></label>
+ </div></div></details>
+ <div class="card" style="margin-bottom:0">
+  <h2 style="font-size:15px">📖 Как пользоваться</h2>
+  <ul class="hl">
+   <li><b>🎨 Доска</b> — весь экран. Выберите инструмент, кликайте на план комнаты</li>
+   <li><b>🚪/🪟</b>: выберите инструмент, кликните на стену</li>
+   <li><b>✏️ Провод</b>: клик на первый элемент → клик на второй</li>
+   <li>Сечения: свет/выкл 1,5 · розетки/конд. 2,5 · варочная 6</li>
+  </ul>
+ </div>
+</div>
+
+<details class="card"><summary>💰 Цены для сметы (₽)</summary><div class="body"><div class="sg">
+ <label>Кабель 3×1,5 за м<input type="number" id="pC15" min="0"></label>
+ <label>Кабель 3×2,5 за м<input type="number" id="pC25" min="0"></label>
+ <label>Кабель 3×4 за м<input type="number" id="pC4" min="0"></label>
+ <label>Кабель 3×6 за м<input type="number" id="pC6" min="0"></label>
+ <label>Автомат линии<input type="number" id="pBrk" min="0"></label>
+ <label>УЗО<input type="number" id="pRcd" min="0"></label>
+ <label>Щит<input type="number" id="pPanelP" min="0"></label>
+ <label>Подрозетник<input type="number" id="pPodroz" min="0"></label>
+ <label>Коробка распред.<input type="number" id="pKorob" min="0"></label>
+</div></div></details>
+<footer>Проводомер · чертёж и смета проводки · всё сохраняется в браузере</footer>
+</div>
+
+<button class="fab" type="button" onclick="openBoard()">🎨 <span>Доска</span></button>
+
+<div class="board" id="board">
+ <div class="btop">
+  <button class="bb" type="button" onclick="closeBoard()" title="Назад">←</button>
+  <div class="btitle">📐 Доска <span class="subtle" id="bRoom"></span></div>
+  <button class="bb" id="undoBtn" type="button" title="Отменить">↩</button>
+  <button class="bb" id="clearBtn" type="button" title="Очистить комнату">🧹</button>
+  <button class="bb" id="themeBtn2" type="button" title="Тема">🌙</button>
+  <button class="bb" id="zFit" type="button" title="Вписать">⤢</button>
+ </div>
+ <div class="btools" id="tools">
+  <button class="tool active" data-tool="select">👆 Выбор</button>
+  <button class="tool" data-tool="hand">✋ Рука</button>
+  <button class="tool" data-tool="Р"><span class="td" style="--c:#22d3ee">Р</span>Розетка</button>
+  <button class="tool" data-tool="В"><span class="td" style="--c:#a78bfa">В</span>Выкл</button>
+  <button class="tool" data-tool="Л"><span class="td" style="--c:#34d399">Л</span>Свет</button>
+  <button class="tool" data-tool="П"><span class="td" style="--c:#fb923c">П</span>Вароч</button>
+  <button class="tool" data-tool="С"><span class="td" style="--c:#60a5fa">С</span>Конд</button>
+  <button class="tool" data-tool="К"><span class="td sq" style="--c:#fbbf24">К</span>Коробка</button>
+  <button class="tool" data-tool="Щ"><span class="td sq" style="--c:#f87171">Щ</span>Щиток</button>
+  <button class="tool" data-tool="Д"><span class="td sq" style="--c:#d4a373">Д</span>Дверь</button>
+  <button class="tool" data-tool="О"><span class="td sq" style="--c:#7dd3fc">О</span>Окно</button>
+  <button class="tool" data-tool="wire">✏️ Провод</button>
+  <button class="tool danger" data-tool="erase">🗑 Ластик</button>
+ </div>
+ <div class="parea">
+  <svg id="plan" viewBox="0 0 600 400" preserveAspectRatio="xMidYMid meet"></svg>
+  <div class="zbar">
+   <button id="zIn" type="button">＋</button>
+   <button id="zOut" type="button">－</button>
+  </div>
+ </div>
+ <div class="bbot">
+  <div class="tip" id="tip">Выберите инструмент и кликните на план комнаты</div>
+ </div>
+</div>
+
+<script>
+// ==================== ПРОВОДОМЕР v2.0 ====================
+(function() {
+'use strict';
+
+const SVG_NS = 'http://www.w3.org/2000/svg';
+const PX_PER_METER = 46;
+const LS_KEY = 'provodomer_v9';
+
+const COLORS = {'Р':'#22d3ee','В':'#a78bfa','Л':'#34d399','П':'#fb923c','С':'#60a5fa','К':'#fbbf24','Щ':'#f87171','Д':'#d4a373','О':'#7dd3fc'};
+const SECTIONS = {'Л':1.5,'В':1.5,'Р':2.5,'С':2.5,'П':6};
+const TYPE_NAMES = {'Р':'Розетка','В':'Выключатель','Л':'Свет','П':'Варочная','С':'Кондиционер','К':'Коробка','Щ':'Щиток','Д':'Дверь','О':'Окно'};
+
+// Состояние
+let state = {
+  rooms: [],
+  activeRoomId: null,
+  wires: [],
+  settings: {reserve:20,pct:10,outlet:30,switchh:90,cookH:15,boxOff:20,acOff:30,panel:150},
+  prices: {cab:{1.5:90,2.5:140,4:220,6:330},brk:250,rcd:1800,panel:2500,podroz:15,korob:20}
+};
+
+let currentTool = 'select';
+let selectedItemId = null;
+let wireStart = null;
+let editRoomId = null;
+let camera = {x:0,y:0,w:600,h:400};
+let isDragging = false, dragStart = null, camStart = null;
+let history = [];
+
+// Утилиты
+const $ = id => document.getElementById(id);
+const uid = () => Math.random().toString(36).substr(2,9);
+const clamp = (v,min,max) => Math.max(min,Math.min(max,v));
+const fmt = n => Math.round(n*100)/100;
+const money = n => Math.round(n).toLocaleString('ru-RU')+' ₽';
+const createSVG = tag => document.createElementNS(SVG_NS,tag);
+
+function saveState(){try{localStorage.setItem(LS_KEY,JSON.stringify(state));}catch(e){}}
+function pushHistory(){history.push(JSON.parse(JSON.stringify({rooms:state.rooms,wires:state.wires})));if(history.length>50)history.shift();}
+function getActiveRoom(){return state.rooms.find(r=>r.id===state.activeRoomId)||null;}
+
+function undo(){
+  if(!history.length)return;
+  const prev=history.pop();
+  state.rooms=prev.rooms;state.wires=prev.wires;
+  if(!state.rooms.find(r=>r.id===state.activeRoomId))state.activeRoomId=state.rooms.length?state.rooms[0].id:null;
+  selectedItemId=null;wireStart=null;
+  saveState();updateAll();
+}
+
+function findItem(itemId){
+  for(const room of state.rooms){
+    const item=(room.items||[]).find(i=>i.id===itemId);
+    if(item)return{room,item};
+  }
+  return null;
+}
+
+function snapToWall(x,y,W,L){
+  const d=[{d:y,w:'top',x,y:0},{d:W-x,w:'right',x:W,y},{d:L-y,w:'bottom',x,y:L},{d:x,w:'left',x:0,y}];
+  d.sort((a,b)=>a.d-b.d);
+  return{x:clamp(d[0].x,0,W),y:clamp(d[0].y,0,L)};
+}
+
+// Рендеринг SVG
+function renderSVG(){
+  const svg=$('plan');if(!svg)return;
+  svg.innerHTML='';
+  svg.setAttribute('viewBox',`${camera.x} ${camera.y} ${camera.w} ${camera.h}`);
+  
+  // Сетка
+  const grid=createSVG('g');
+  grid.setAttribute('stroke','#2a3040');grid.setAttribute('stroke-width','0.5');grid.setAttribute('opacity','0.3');
+  const step=PX_PER_METER;
+  for(let x=Math.floor(camera.x/step)*step;x<camera.x+camera.w;x+=step){
+    const l=createSVG('line');l.setAttribute('x1',x);l.setAttribute('y1',camera.y);l.setAttribute('x2',x);l.setAttribute('y2',camera.y+camera.h);grid.appendChild(l);
+  }
+  for(let y=Math.floor(camera.y/step)*step;y<camera.y+camera.h;y+=step){
+    const l=createSVG('line');l.setAttribute('x1',camera.x);l.setAttribute('y1',y);l.setAttribute('x2',camera.x+camera.w);l.setAttribute('y2',y);grid.appendChild(l);
+  }
+  svg.appendChild(grid);
+  
+  // Комнаты
+  state.rooms.forEach(room=>{
+    const g=createSVG('g');
+    const rx=room.x0*PX_PER_METER,ry=room.y0*PX_PER_METER,rw=room.W*PX_PER_METER,rl=room.L*PX_PER_METER;
+    const isActive=room.id===state.activeRoomId;
+    
+    const rect=createSVG('rect');
+    rect.setAttribute('x',rx);rect.setAttribute('y',ry);rect.setAttribute('width',rw);rect.setAttribute('height',rl);
+    rect.setAttribute('fill',isActive?'#1a2744':'#111827');rect.setAttribute('stroke',isActive?'#fbbf24':'#374151');
+    rect.setAttribute('stroke-width',isActive?'2':'1');rect.setAttribute('rx','4');
+    g.appendChild(rect);
+    
+    const text=createSVG('text');
+    text.setAttribute('x',rx+rw/2);text.setAttribute('y',ry+rl/2);text.setAttribute('text-anchor','middle');
+    text.setAttribute('dominant-baseline','middle');text.setAttribute('fill','#9ca3af');
+    text.setAttribute('font-size','14');text.setAttribute('font-weight','bold');text.setAttribute('opacity','0.5');
+    text.textContent=room.name;g.appendChild(text);
+    
+    // Размеры
+    const wt=createSVG('text');wt.setAttribute('x',rx+rw/2);wt.setAttribute('y',ry-8);
+    wt.setAttribute('text-anchor','middle');wt.setAttribute('fill','#6b7280');wt.setAttribute('font-size','10');
+    wt.textContent=room.W+' м';g.appendChild(wt);
+    
+    const lt=createSVG('text');lt.setAttribute('x',rx+rw+12);lt.setAttribute('y',ry+rl/2);
+    lt.setAttribute('text-anchor','middle');lt.setAttribute('fill','#6b7280');lt.setAttribute('font-size','10');
+    lt.textContent=room.L+' м';g.appendChild(lt);
+    
+    // Элементы
+    (room.items||[]).forEach(item=>{
+      const ix=rx+item.x*PX_PER_METER,iy=ry+item.y*PX_PER_METER;
+      const isSel=item.id===selectedItemId;
+      
+      if(item.type==='Д'||item.type==='О'){
+        const w=(item.w||0.9)*PX_PER_METER;
+        const snap=snapToWall(item.x,item.y,room.W,room.L);
+        let x1,y1,x2,y2;
+        if(Math.abs(snap.y)<0.1){x1=ix-w/2;y1=iy;x2=ix+w/2;y2=iy;}
+        else if(Math.abs(snap.x-room.W)<0.1){x1=ix;y1=iy-w/2;x2=ix;y2=iy+w/2;}
+        else if(Math.abs(snap.y-room.L)<0.1){x1=ix-w/2;y1=iy;x2=ix+w/2;y2=iy;}
+        else{x1=ix;y1=iy-w/2;x2=ix;y2=iy+w/2;}
+        
+        const line=createSVG('line');
+        line.setAttribute('x1',x1);line.setAttribute('y1',y1);line.setAttribute('x2',x2);line.setAttribute('y2',y2);
+        line.setAttribute('stroke',item.type==='Д'?'#d4a373':'#7dd3fc');
+        line.setAttribute('stroke-width',isSel?'6':'4');line.setAttribute('stroke-linecap','round');
+        line.style.cursor='pointer';line.dataset.itemId=item.id;g.appendChild(line);
+      }else{
+        const r=(item.type==='К'||item.type==='Щ')?7:5;
+        const circle=createSVG('circle');
+        circle.setAttribute('cx',ix);circle.setAttribute('cy',iy);circle.setAttribute('r',r);
+        circle.setAttribute('fill',COLORS[item.type]||'#fff');
+        circle.setAttribute('stroke',isSel?'#fbbf24':'#1f2937');circle.setAttribute('stroke-width',isSel?'3':'1.5');
+        circle.style.cursor='pointer';circle.dataset.itemId=item.id;
+        
+        if(item.type!=='К'&&item.type!=='Щ'){
+          const label=createSVG('text');
+          label.setAttribute('x',ix);label.setAttribute('y',iy+3.5);label.setAttribute('text-anchor','middle');
+          label.setAttribute('fill','#000');label.setAttribute('font-size','8');label.setAttribute('font-weight','bold');
+          label.textContent=item.type;circle.appendChild(label);
+        }
+        g.appendChild(circle);
+      }
+    });
+    
+    svg.appendChild(g);
+  });
+  
+  // Провода
+  state.wires.forEach(wire=>{
+    const fromRoom=state.rooms.find(r=>r.id===wire.fromRoomId);
+    const toRoom=state.rooms.find(r=>r.id===wire.toRoomId);
+    if(!fromRoom||!toRoom)return;
+    const fromItem=(fromRoom.items||[]).find(i=>i.id===wire.fromItemId);
+    const toItem=(toRoom.items||[]).find(i=>i.id===wire.toItemId);
+    if(!fromItem||!toItem)return;
+    
+    const x1=(fromRoom.x0+fromItem.x)*PX_PER_METER,y1=(fromRoom.y0+fromItem.y)*PX_PER_METER;
+    const x2=(toRoom.x0+toItem.x)*PX_PER_METER,y2=(toRoom.y0+toItem.y)*PX_PER_METER;
+    
+    const section=SECTIONS[wire.type]||2.5;
+    const sc={'1.5':'#a78bfa','2.5':'#22d3ee','6':'#fb923c'};
+    
+    const line=createSVG('line');
+    line.setAttribute('x1',x1);line.setAttribute('y1',y1);line.setAttribute('x2',x2);line.setAttribute('y2',y2);
+    line.setAttribute('stroke',sc[section]||'#fff');line.setAttribute('stroke-width','2');
+    line.setAttribute('stroke-dasharray','8,4');line.setAttribute('opacity','0.7');
+    svg.appendChild(line);
+  });
+}
+
+// Расчеты
+function calculate(){
+  let total15=0,total25=0,total6=0;
+  const details=[];
+  
+  state.wires.forEach(wire=>{
+    const fromRoom=state.rooms.find(r=>r.id===wire.fromRoomId);
+    const toRoom=state.rooms.find(r=>r.id===wire.toRoomId);
+    if(!fromRoom||!toRoom)return;
+    const fromItem=(fromRoom.items||[]).find(i=>i.id===wire.fromItemId);
+    const toItem=(toRoom.items||[]).find(i=>i.id===wire.toItemId);
+    if(!fromItem||!toItem)return;
+    
+    const fx=fromRoom.x0+fromItem.x,fy=fromRoom.y0+fromItem.y;
+    const tx=toRoom.x0+toItem.x,ty=toRoom.y0+toItem.y;
+    let len=Math.hypot(tx-fx,ty-fy);
+    
+    const s=state.settings;
+    if(fromItem.type==='В')len+=fromRoom.H-s.switchh/100;
+    if(fromItem.type==='Р')len+=fromRoom.H-s.outlet/100;
+    if(fromItem.type==='Щ')len+=fromRoom.H-s.panel/100;
+    if(toItem.type==='В')len+=toRoom.H-s.switchh/100;
+    if(toItem.type==='Р')len+=toRoom.H-s.outlet/100;
+    if(toItem.type==='Щ')len+=toRoom.H-s.panel/100;
+    len+=s.reserve/100*2;
+    
+    const sec=SECTIONS[wire.type]||2.5;
+    if(sec===1.5)total15+=len;else if(sec===2.5)total25+=len;else if(sec===6)total6+=len;
+    details.push({sec,from:fromRoom.name,to:toRoom.name,type:wire.type,len});
+  });
+  
+  const pct=1+state.settings.pct/100;
+  total15*=pct;total25*=pct;total6*=pct;
+  
+  $('ch15').textContent=fmt(total15)+' м';
+  $('ch25').textContent=fmt(total25)+' м';
+  $('ch6').textContent=fmt(total6)+' м';
+  $('chT').textContent=fmt(total15+total25+total6)+' м';
+  
+  // Таблица проводов
+  const secNames={'1.5':'3×1,5','2.5':'3×2,5','6':'3×6'};
+  $('tb').innerHTML=details.map(w=>`<tr><td>${secNames[w.sec]}</td><td>${w.from}→${w.to} (${TYPE_NAMES[w.type]})</td><td>${w.sec} мм²</td><td class="cmon">${fmt(w.len)}</td></tr>`).join('');
+  
+  const secs={};
+  details.forEach(w=>{secs[w.sec]=(secs[w.sec]||0)+w.len;});
+  $('tf').innerHTML=Object.entries(secs).map(([s,l])=>`<tr><td colspan="3">${secNames[s]}</td><td class="clen">${fmt(l)}</td></tr>`).join('')+
+    `<tr><td colspan="3"><b>Всего</b></td><td class="clen"><b>${fmt(Object.values(secs).reduce((a,b)=>a+b,0))}</b></td></tr>`;
+  
+  // Смета
+  const pr=state.prices;
+  const c15=Math.ceil(total15),c25=Math.ceil(total25),c6=Math.ceil(total6);
+  let korob=0,podroz=0,doors=0,windows=0;
+  state.rooms.forEach(room=>{(room.items||[]).forEach(item=>{
+    if(item.type==='К')korob++;if(item.type==='Р'||item.type==='В')podroz++;
+    if(item.type==='Д')doors++;if(item.type==='О')windows++;
+  });});
+  
+  let brk=0;if(total15>0)brk++;if(total25>0)brk++;if(total6>0)brk++;
+  const rcd=Math.ceil(brk/3);
+  
+  const rows=[
+    c15>0&&['Кабель 3×1,5',c15+' м',pr.cab[1.5],c15*pr.cab[1.5]],
+    c25>0&&['Кабель 3×2,5',c25+' м',pr.cab[2.5],c25*pr.cab[2.5]],
+    c6>0&&['Кабель 3×6',c6+' м',pr.cab[6],c6*pr.cab[6]],
+    ['Автоматы линии',brk+' шт',pr.brk,brk*pr.brk],
+    ['УЗО',rcd+' шт',pr.rcd,rcd*pr.rcd],
+    ['Щит','1 шт',pr.panel,pr.panel],
+    ['Подрозетники',podroz+' шт',pr.podroz,podroz*pr.podroz],
+    ['Коробки распред.',korob+' шт',pr.korob,korob*pr.korob]
+  ].filter(Boolean);
+  
+  const total=rows.reduce((s,r)=>s+r[3],0);
+  $('tm').innerHTML=rows.map(r=>`<tr><td>${r[0]}</td><td class="cmon">${r[1]}</td><td class="cmon">${money(r[2])}</td><td class="cmon">${money(r[3])}</td></tr>`).join('');
+  $('tmf').innerHTML=`<tr><td colspan="3"><b>Итого</b></td><td class="clen"><b>${money(total)}</b></td></tr>`;
+  $('chM').textContent=money(total);
+  
+  // Комнаты
+  $('trm').innerHTML=state.rooms.map(room=>{
+    const items=room.items||[];
+    return `<tr><td>${room.name}</td><td class="cmon">${items.filter(i=>i.type==='К').length}</td><td class="cmon">${items.filter(i=>i.type==='Р'||i.type==='В').length}</td><td class="cmon">—</td><td class="cmon">—</td><td class="cmon">${items.filter(i=>i.type==='Д').length}</td><td class="cmon">${items.filter(i=>i.type==='О').length}</td></tr>`;
+  }).join('');
+}
+
+// Обновление UI
+function updateAll(){
+  renderSVG();calculate();
+  updateRoomList();updateTip();
+}
+
+function updateRoomList(){
+  const ul=$('roomList');if(!ul)return;
+  ul.innerHTML=state.rooms.map(r=>`<li class="room${r.id===state.activeRoomId?' active':''}" onclick="selectRoom('${r.id}')">
+    <div class="rmain"><div class="rname">${r.name}</div><div class="rdims">${r.W}×${r.L}×${r.H} м</div></div>
+    <button class="ibtn" onclick="event.stopPropagation();editRoom('${r.id}')">✎</button>
+    <button class="ibtn del" onclick="event.stopPropagation();deleteRoom('${r.id}')">🗑</button>
+  </li>`).join('')||'<li class="empty">Нет комнат</li>';
+  $('roomsCount').textContent=`(${state.rooms.length})`;
+}
+
+function updateTip(){
+  const room=getActiveRoom();
+  if(room){
+    $('tip').textContent=`${room.name} | ${room.W}×${room.L} м | ${TYPE_NAMES[currentTool]||currentTool}`;
+    $('bRoom').textContent=room.name;
+  }
+}
+
+// Глобальные функции
+window.selectRoom=function(id){state.activeRoomId=id;selectedItemId=null;wireStart=null;saveState();updateAll();};
+window.deleteRoom=function(id){if(!confirm('Удалить комнату?'))return;pushHistory();state.rooms=state.rooms.filter(r=>r.id!==id);state.wires=state.wires.filter(w=>w.fromRoomId!==id&&w.toRoomId!==id);if(state.activeRoomId===id)state.activeRoomId=state.rooms.length?state.rooms[0].id:null;saveState();updateAll();};
+window.editRoom=function(id){const room=state.rooms.find(r=>r.id===id);if(!room)return;editRoomId=id;$('rName').value=room.name;$('rW').value=room.W;$('rL').value=room.L;$('rH').value=room.H;$('cancelEdit').style.display='inline-block';};
+window.openBoard=function(){const b=$('board');if(b){b.classList.add('open');document.body.classList.add('lock');fitAll();updateAll();}};
+window.closeBoard=function(){const b=$('board');if(b){b.classList.remove('open');document.body.classList.remove('lock');}};
+
+function fitAll(){
+  if(!state.rooms.length)return;
+  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+  state.rooms.forEach(r=>{minX=Math.min(minX,r.x0*PX_PER_METER);minY=Math.min(minY,r.y0*PX_PER_METER);maxX=Math.max(maxX,(r.x0+r.W)*PX_PER_METER);maxY=Math.max(maxY,(r.y0+r.L)*PX_PER_METER);});
+  const pad=50;
+  camera={x:minX-pad,y:minY-pad,w:maxX-minX+pad*2,h:maxY-minY+pad*2};
+}
+
+// Обработчики событий
+function init(){
+  // Загрузка данных
+  try{const saved=JSON.parse(localStorage.getItem(LS_KEY));if(saved&&saved.rooms&&saved.rooms.length){state={...state,...saved};state.settings={...state.settings,...saved.settings};state.prices={...state.prices,...saved.prices};if(saved.prices?.cab)state.prices.cab={...state.prices.cab,...saved.prices.cab};}}catch(e){}
+  if(!state.rooms.length){
+    const id1=uid(),id2=uid();
+    state.rooms=[{id:id1,name:'Гостиная',W:4,L:5,H:2.7,x0:0,y0:0,items:[{id:uid(),type:'Щ',x:.5,y:0},{id:uid(),type:'К',x:2,y:0},{id:uid(),type:'Р',x:4,y:.5},{id:uid(),type:'Р',x:4,y:2.5},{id:uid(),type:'В',x:3,y:5},{id:uid(),type:'Л',x:2,y:2.5},{id:uid(),type:'Д',x:1.5,y:5,w:.9,h:2.1},{id:uid(),type:'О',x:0,y:1.5,w:1.5,h:1.4}]},{id:id2,name:'Кухня',W:3,L:4,H:2.7,x0:4.5,y0:0,items:[{id:uid(),type:'К',x:1.5,y:0},{id:uid(),type:'П',x:.5,y:2},{id:uid(),type:'С',x:3,y:1},{id:uid(),type:'Р',x:3,y:.5},{id:uid(),type:'Л',x:1.5,y:2},{id:uid(),type:'О',x:1.5,y:4,w:1.4,h:1.3}]}];
+    state.activeRoomId=id1;
+  }
+  if(!state.activeRoomId||!state.rooms.find(r=>r.id===state.activeRoomId))state.activeRoomId=state.rooms[0].id;
+  saveState();
+  
+  // Форма комнаты
+  $('roomForm').addEventListener('submit',e=>{
+    e.preventDefault();
+    const name=$('rName').value.trim();let W=parseFloat($('rW').value),L=parseFloat($('rL').value),H=parseFloat($('rH').value)||2.7;
+    if(!name)return alert('Введите название');
+    if(isNaN(W)||isNaN(L)){const parts=name.split('*').map(p=>parseFloat(p.trim()));if(parts.length>=2&&!isNaN(parts[0])){W=parts[0];L=parts[1];H=parts[2]||H;}else return alert('Введите размеры');}
+    
+    if(editRoomId){
+      const room=state.rooms.find(r=>r.id===editRoomId);if(room){room.name=name;room.W=W;room.L=L;room.H=H;}
+      editRoomId=null;$('cancelEdit').style.display='none';
+    }else{
+      let x0=0,y0=0;if(state.rooms.length){const last=state.rooms[state.rooms.length-1];x0=last.x0+last.W+.5;y0=last.y0;}
+      state.rooms.push({id:uid(),name,W,L,H,x0,y0,items:[]});state.activeRoomId=state.rooms[state.rooms.length-1].id;
+    }
+    $('roomForm').reset();saveState();updateAll();
+  });
+  
+  $('cancelEdit').addEventListener('click',()=>{editRoomId=null;$('cancelEdit').style.display='none';$('roomForm').reset();});
+  
+  // Инструменты
+  $('tools').addEventListener('click',e=>{
+    const btn=e.target.closest('.tool');if(!btn)return;
+    $('tools').querySelectorAll('.tool').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');currentTool=btn.dataset.tool;selectedItemId=null;wireStart=null;
+    updateAll();
+  });
+  
+  // SVG
+  const svg=$('plan');
+  svg.addEventListener('click',e=>{
+    const rect=svg.getBoundingClientRect();
+    const sx=camera.w/rect.width,sy=camera.h/rect.height;
+    const wx=camera.x+(e.clientX-rect.left)*sx,wy=camera.y+(e.clientY-rect.top)*sy;
+    
+    if(e.target.dataset?.itemId){
+      const itemId=e.target.dataset.itemId;
+      if(currentTool==='wire'){
+        if(!wireStart){wireStart={itemId};$('tip').textContent='Выберите второй элемент';updateAll();}
+        else{
+          const from=findItem(wireStart.itemId),to=findItem(itemId);
+          if(from&&to){
+            pushHistory();
+            state.wires.push({id:uid(),fromRoomId:from.room.id,fromItemId:wireStart.itemId,toRoomId:to.room.id,toItemId:itemId,type:from.item.type});
+            wireStart=null;saveState();updateAll();
+          }
+        }
+      }else if(currentTool==='select'){selectedItemId=itemId;updateAll();}
+      else if(currentTool==='erase'){
+        const found=findItem(itemId);
+        if(found){pushHistory();found.room.items=found.room.items.filter(i=>i.id!==itemId);saveState();updateAll();}
+      }
+      return;
+    }
+    
+    const room=getActiveRoom();if(!room)return;
+    const rx=room.x0*PX_PER_METER,ry=room.y0*PX_PER_METER,rw=room.W*PX_PER_METER,rl=room.L*PX_PER_METER;
+    if(wx<rx||wx>rx+rw||wy<ry||wy>ry+rl)return;
+    
+    const mx=(wx-rx)/PX_PER_METER,my=(wy-ry)/PX_PER_METER;
+    
+    if(currentTool==='select'||currentTool==='hand'||currentTool==='wire')return;
+    
+    if(currentTool==='erase'){
+      const items=room.items||[];let closest=null,minD=.5;
+      for(const item of items){const d=Math.hypot(item.x-mx,item.y-my);if(d<minD){minD=d;closest=item;}}
+      if(closest){pushHistory();room.items=items.filter(i=>i.id!==closest.id);saveState();updateAll();}
+      return;
+    }
+    
+    if(TYPE_NAMES[currentTool]){
+      pushHistory();
+      const snap=snapToWall(mx,my,room.W,room.L);
+      const item={id:uid(),type:currentTool,x:snap.x,y:snap.y};
+      if(currentTool==='Д')Object.assign(item,{w:.9,h:2.1});if(currentTool==='О')Object.assign(item,{w:1.5,h:1.4});
+      if(!room.items)room.items=[];room.items.push(item);
+      saveState();updateAll();
+    }
+  });
+  
+  // Перетаскивание
+  svg.addEventListener('mousedown',e=>{if(currentTool==='hand'){isDragging=true;dragStart={x:e.clientX,y:e.clientY};camStart={...camera};svg.style.cursor='grabbing';}});
+  window.addEventListener('mousemove',e=>{if(isDragging){const dx=e.clientX-dragStart.x,dy=e.clientY-dragStart.y;const sc=camera.w/svg.getBoundingClientRect().width;camera.x=camStart.x-dx*sc;camera.y=camStart.y-dy*sc;renderSVG();}});
+  window.addEventListener('mouseup',()=>{isDragging=false;svg.style.cursor=currentTool==='hand'?'grab':'crosshair';});
+  
+  // Зум колесиком
+  svg.addEventListener('wheel',e=>{e.preventDefault();
+    const rect=svg.getBoundingClientRect();const sc=camera.w/rect.width;
+    const wx=camera.x+(e.clientX-rect.left)*sc,wy=camera.y+(e.clientY-rect.top)*sc;
+    const zoom=e.deltaY>0?1.2:0.8;camera.w*=zoom;camera.h*=zoom;
+    const newSc=camera.w/rect.width;
+    camera.x=wx-(e.clientX-rect.left)*newSc;camera.y=wy-(e.clientY-rect.top)*newSc;
+    renderSVG();
+  });
+  
+  // Кнопки зума
+  $('zIn').addEventListener('click',()=>{camera.x+=camera.w*.1;camera.y+=camera.h*.1;camera.w*=.8;camera.h*=.8;renderSVG();});
+  $('zOut').addEventListener('click',()=>{camera.x-=camera.w*.125;camera.y-=camera.h*.125;camera.w*=1.25;camera.h*=1.25;renderSVG();});
+  $('zFit').addEventListener('click',()=>{fitAll();renderSVG();});
+  $('undoBtn').addEventListener('click',undo);
+  $('clearBtn').addEventListener('click',()=>{const room=getActiveRoom();if(!room||!confirm('Очистить комнату?'))return;pushHistory();room.items=[];state.wires=state.wires.filter(w=>w.fromRoomId!==room.id&&w.toRoomId!==room.id);saveState();updateAll();});
+  
+  // Тема
+  const savedTheme=localStorage.getItem('provodomer_theme')||'dark';
+  document.documentElement.dataset.theme=savedTheme;
+  $('themeBtn').textContent=savedTheme==='light'?'🌙':'☀️';
+  $('themeBtn2').textContent=savedTheme==='light'?'🌙':'☀️';
+  
+  const toggleTheme=()=>{
+    const t=document.documentElement.dataset.theme==='dark'?'light':'dark';
+    document.documentElement.dataset.theme=t;
+    $('themeBtn').textContent=t==='light'?'🌙':'☀️';
+    $('themeBtn2').textContent=t==='light'?'🌙':'☀️';
+    localStorage.setItem('provodomer_theme',t);
+  };
+  $('themeBtn').addEventListener('click',toggleTheme);
+  $('themeBtn2').addEventListener('click',toggleTheme);
+  
+  // Настройки
+  const settingMap={sReserve:'reserve',sPct:'pct',sOutlet:'outlet',sSwitch:'switchh',sCookH:'cookH',sBoxOff:'boxOff',sAcOff:'acOff',sPanel:'panel'};
+  Object.entries(settingMap).forEach(([id,key])=>{const el=$(id);if(el){el.value=state.settings[key];el.addEventListener('change',function(){state.settings[key]=parseFloat(this.value)||0;saveState();calculate();});}});
+  
+  // Цены
+  const priceMap={pC15:[1.5],pC25:[2.5],pC4:[4],pC6:[6]};
+  Object.entries(priceMap).forEach(([id,key])=>{const el=$(id);if(el){el.value=state.prices.cab[key];el.addEventListener('change',function(){state.prices.cab[key]=parseFloat(this.value)||0;saveState();calculate();});}});
+  
+  ['pBrk','pRcd','pPanelP','pPodroz','pKorob'].forEach(id=>{const el=$(id);if(el){const key=id.replace('p','').replace('PanelP','panel').replace('Podroz','podroz').replace('Korob','korob').toLowerCase();el.value=state.prices[key];el.addEventListener('change',function(){state.prices[key]=parseFloat(this.value)||0;saveState();calculate();});}});
+  
+  // Экспорт/импорт
+  $('expBtn').addEventListener('click',()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='provodomer.json';a.click();URL.revokeObjectURL(url);});
+  $('impBtn').addEventListener('click',()=>$('impFile').click());
+  $('impFile').addEventListener('change',e=>{const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{try{const data=JSON.parse(ev.target.result);if(data.rooms){state={...state,...data};state.settings={...state.settings,...data.settings};state.prices={...state.prices,...data.prices};if(data.prices?.cab)state.prices.cab={...state.prices.cab,...data.prices.cab};saveState();updateAll();alert('Проект загружен!');}}catch(ex){alert('Ошибка чтения файла');}};reader.readAsText(file);});
+  
+  // Копирование
+  $('copyBtn').addEventListener('click',()=>{const text=$('tm').innerText+'\n'+$('tmf').innerText;navigator.clipboard.writeText(text).then(()=>alert('Смета скопирована!'));});
+  
+  updateAll();
+  console.log('✅ Проводомер v2.0 готов к работе!');
+}
+
+init();
+
+})();
+</script>
+</body>
+</html>
